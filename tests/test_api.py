@@ -117,3 +117,16 @@ def test_model_failure_has_request_id():
         response = client.post("/api/v1/tickets/triage", json=TICKET, headers=headers(client))
         assert response.status_code == 503
         assert response.json()["detail"]["request_id"]
+
+
+def test_total_inference_deadline():
+    import asyncio
+
+    class Slow:
+        async def run(self, ticket):
+            await asyncio.sleep(0.1)
+
+    with TestClient(create_app(config(inference_timeout=0.01), Slow())) as client:
+        response = client.post("/api/v1/tickets/triage", json=TICKET, headers=headers(client))
+        assert response.status_code == 503
+        assert "deadline" in response.json()["detail"]["message"]

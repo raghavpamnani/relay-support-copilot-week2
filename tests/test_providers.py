@@ -93,3 +93,16 @@ async def test_timeout_and_missing_cloud_key():
             await gateway.run(Ticket(**TICKET))
         with pytest.raises(ProviderError, match="not configured"):
             await gateway.run(Ticket(**TICKET, provider="cloud"))
+
+
+async def test_unverified_refund_claim_is_withheld():
+    def handle(request):
+        content = {
+            **VALID,
+            "suggested_reply": "We have marked the refund as completed and approved.",
+        }
+        return httpx.Response(200, json={"message": {"content": json.dumps(content)}})
+
+    async with httpx.AsyncClient(transport=httpx.MockTransport(handle)) as client:
+        with pytest.raises(ProviderError, match="Draft withheld"):
+            await ModelGateway(config(), client).run(Ticket(**TICKET))

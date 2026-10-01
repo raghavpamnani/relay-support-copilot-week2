@@ -4,7 +4,7 @@ import time
 import uuid
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
-from typing import Annotated, Any
+from typing import Annotated, Any, Protocol
 
 import httpx
 import jwt
@@ -13,7 +13,7 @@ from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 
 from app.config import Settings
 from app.limits import UsageControl
-from app.providers import PROMPT_VERSION, ModelGateway, ProviderError
+from app.providers import PROMPT_VERSION, Inference, ModelGateway, ProviderError
 from app.schemas import Login, Metadata, Ticket, TicketResult
 from app.security import decode_token, issue_token, password_hasher
 
@@ -21,7 +21,11 @@ logger = logging.getLogger("relay")
 bearer = HTTPBearer(auto_error=False)
 
 
-def create_app(settings: Settings | None = None, gateway: Any = None) -> FastAPI:
+class Gateway(Protocol):
+    async def run(self, ticket: Ticket) -> Inference: ...
+
+
+def create_app(settings: Settings | None = None, gateway: Gateway | None = None) -> FastAPI:
     config = settings or Settings()
     usage = UsageControl(config.requests_per_minute, config.daily_request_limit)
     login_usage = UsageControl(10, 500)
@@ -109,7 +113,12 @@ def create_app(settings: Settings | None = None, gateway: Any = None) -> FastAPI
         started = time.perf_counter()
         async with slots:
             try:
-                result = await request.app.state.gateway.run(body)
+                async with asyncio.timeout(config.inference_timeout):
+                    result = await request.app.state.gateway.run(body)
+            except TimeoutError as exc:
+                raise HTTPException(
+                    503, {"message": "Inference deadline exceeded.", "request_id": request_id}
+                ) from exc
             except ProviderError as exc:
                 logger.warning("inference_failed request_id=%s", request_id)
                 raise HTTPException(

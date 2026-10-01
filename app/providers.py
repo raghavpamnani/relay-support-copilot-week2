@@ -7,6 +7,7 @@ import httpx
 from pydantic import ValidationError
 
 from app.config import Settings
+from app.safety import has_unsupported_action
 from app.schemas import Ticket, Triage
 
 PROMPT_VERSION = "triage-v1"
@@ -116,6 +117,11 @@ class ModelGateway:
                 incoming = token_count(usage.get("prompt_tokens"))
                 outgoing = token_count(usage.get("completion_tokens"))
             triage = Triage.model_validate_json(content)
+            if has_unsupported_action(triage.suggested_reply):
+                raise ProviderError(
+                    "Draft withheld: model claimed an unverified action. "
+                    "A human agent should handle this ticket."
+                )
             if triage.priority == "urgent":
                 triage.needs_human_review = True
             return Inference(triage, provider, model, incoming, outgoing)
