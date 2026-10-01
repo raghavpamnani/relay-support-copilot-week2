@@ -1,0 +1,38 @@
+name: Quality and container
+on: [push, pull_request]
+permissions:
+  contents: read
+jobs:
+  quality:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          version: "0.12.21"
+          python-version: "3.12"
+      - run: uv sync --frozen
+      - run: uv run ruff check .
+      - run: uv run ruff format --check .
+      - run: uv run mypy app
+      - run: uv run pytest -q
+      - name: Verify private files are excluded
+        run: |
+          if git ls-files | grep -Ei '(\.pdf$|(^|/)\.env$|\.local-runtime/)'; then
+            echo "Private files must not be tracked"; exit 1
+          fi
+  container:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: docker build -t relay:test .
+      - name: Smoke test container
+        run: |
+          SECRET=$(openssl rand -hex 32)
+          HASH=$(docker run --rm relay:test python -c "from pwdlib import PasswordHash; print(PasswordHash.recommended().hash('ci-only-password'))")
+          docker run -d --name relay -p 8000:8000 -e JWT_SECRET="$SECRET" -e DEMO_PASSWORD_HASH="$HASH" relay:test
+          for i in $(seq 1 30); do
+            if curl --fail http://localhost:8000/healthz; then exit 0; fi
+            sleep 2
+          done
+          docker logs relay; exit 1

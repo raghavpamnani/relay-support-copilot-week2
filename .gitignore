@@ -1,0 +1,18 @@
+# Private course material is never published.
+*.pdf
+[[]AI Bootcamp]*
+.env
+.env.*
+!.env.example
+.venv/
+.local-runtime/
+.uv-cache/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.DS_Store
+*.log
+*.pid
+reports/

@@ -1,0 +1,13 @@
+*
+!app/
+!app/**
+!prompts/
+!prompts/**
+!ui/
+!ui/**
+!examples/
+!examples/**
+!.streamlit/
+!.streamlit/**
+!pyproject.toml
+!uv.lock
