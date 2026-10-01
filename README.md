@@ -1,5 +1,7 @@
 # ◈ Relay — Support Ticket Copilot
 
+[![Quality and container](https://github.com/raghavpamnani/relay-support-copilot-week2/actions/workflows/ci.yml/badge.svg)](https://github.com/raghavpamnani/relay-support-copilot-week2/actions/workflows/ci.yml)
+
 **Turn a customer issue into structured triage and a considered reply draft.**
 
 Relay is a Week 2 AI engineering demo: a JWT-protected FastAPI microservice, a Streamlit
@@ -12,13 +14,13 @@ and drafts next steps with typed, validated JSON and visible execution evidence.
 ## Start locally
 
 Prerequisites: Python 3.12, [uv](https://docs.astral.sh/uv/getting-started/installation/),
-[Ollama](https://ollama.com/download). The default Qwen3 1.7B is a small open-weight model;
+[Ollama](https://ollama.com/download). The default Qwen3 4B is a small open-weight model;
 quality and latency must be evaluated for your workload. Internet is needed for initial downloads.
 
 ```bash
 uv sync --frozen
 uv run python scripts/setup_local.py
-ollama pull qwen3:1.7b
+ollama pull qwen3:4b
 # Start `ollama serve` in another terminal if the Ollama service is not running.
 uv run uvicorn app.main:create_app --factory --host 127.0.0.1 --port 8000
 ```
@@ -34,6 +36,9 @@ API docs: **http://localhost:8000/docs**. Liveness: **http://localhost:8000/heal
 
 Try **Duplicate charge**, then **Production outage**. Inspect Execution evidence and export the JSON.
 The first inference can be slower because model loading is included. There is no fake inference mode.
+
+After setup, you can start both app services together with `uv run python scripts/run_demo.py`.
+Ollama must already be running for local mode. Stop with Ctrl+C.
 
 ## Provider selection
 
@@ -98,7 +103,8 @@ account and in-memory rate limits with a single API worker. Restarts reset quota
 an identity provider, shared quota storage, durable audit records, TLS, and broader model evaluation.
 Input length, output tokens, concurrency, per-minute requests, and daily requests are bounded.
 Request quotas include failed/busy attempts; they are not billing-grade token accounting.
-Schema validity does not prove factual accuracy or prompt-injection resistance. Review every reply.
+A conservative phrase filter withholds certain unsupported action claims, but can have false positives
+and miss paraphrases. Schema validity does not prove factual accuracy or prompt-injection resistance. Review every reply.
 No ticket persistence is implemented; signing out clears the browser session's result.
 
 ## References

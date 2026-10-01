@@ -1,0 +1,47 @@
+{
+  "sample_count": 6,
+  "schema_valid_count": 6,
+  "category_correct": 6,
+  "priority_correct": 6,
+  "median_latency_ms": 9573.0,
+  "model": "qwen3:4b",
+  "scope": "Six synthetic development smoke cases; not a held-out benchmark.",
+  "cases": [
+    {
+      "scenario": "Duplicate charge",
+      "category_correct": true,
+      "priority_correct": true,
+      "latency_ms": 25753
+    },
+    {
+      "scenario": "Production outage",
+      "category_correct": true,
+      "priority_correct": true,
+      "latency_ms": 7491
+    },
+    {
+      "scenario": "Account access",
+      "category_correct": true,
+      "priority_correct": true,
+      "latency_ms": 7047
+    },
+    {
+      "scenario": "Missing parcel",
+      "category_correct": true,
+      "priority_correct": true,
+      "latency_ms": 7844
+    },
+    {
+      "scenario": "Feature request",
+      "category_correct": true,
+      "priority_correct": true,
+      "latency_ms": 11302
+    },
+    {
+      "scenario": "Untrusted instructions",
+      "category_correct": true,
+      "priority_correct": true,
+      "latency_ms": 33761
+    }
+  ]
+}

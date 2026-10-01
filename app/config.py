@@ -8,7 +8,7 @@ class Settings(BaseSettings):
     demo_username: str = "reviewer"
     demo_password_hash: SecretStr
     ollama_url: str = "http://127.0.0.1:11434"
-    ollama_model: str = "qwen3:1.7b"
+    ollama_model: str = "qwen3:4b"
     groq_api_key: SecretStr = SecretStr("")
     groq_model: str = "llama-3.3-70b-versatile"
     allow_cloud_fallback: bool = False
